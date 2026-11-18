@@ -1,0 +1,39 @@
+name: Feature request
+description: Propose a new capability or improvement
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Large features should be discussed before a big PR.
+        See [CONTRIBUTING.md](https://github.com/ROSITO/CortexCraft/blob/main/CONTRIBUTING.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work from the user’s point of view?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about (optional).
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope fit
+      options:
+        - Phase 1 local second brain (in scope)
+        - Unsure
+        - Likely Phase 2 / MindCorpus (may be out of scope)
+    validations:
+      required: true

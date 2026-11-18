@@ -1,0 +1,42 @@
+[package]
+name = "cortexcraft"
+version = "0.1.0"
+description = "CortexCraft — second brain that visualizes itself (ArtCraft / craft-libs)"
+authors = ["you"]
+edition = "2024"
+default-run = "cortexcraft-app"
+
+[lib]
+name = "cortexcraft_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "cortexcraft-app"
+path = "src/main.rs"
+
+[[bin]]
+name = "cortexcraft"
+path = "src/bin/cortexcraft.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2.8.4"
+serde = { version = "1", features = ["derive"] }
+regex = "1"
+serde_json = "1"
+walkdir = "2.5.0"
+craft-mcp-server = { git = "https://github.com/storytold/craft-libs", rev = "3af718585c60d8e9bab05c241d7a28282c61f85c" }
+craft-settings = { git = "https://github.com/storytold/craft-libs", rev = "3af718585c60d8e9bab05c241d7a28282c61f85c" }
+craft-flags = { git = "https://github.com/storytold/craft-libs", rev = "3af718585c60d8e9bab05c241d7a28282c61f85c" }
+quick-xml = "0.37"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true

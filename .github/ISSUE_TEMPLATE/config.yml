@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/ROSITO/CortexCraft/security/advisories/new
+    about: Please report security issues privately — do not open a public issue.
+  - name: Contributing guide
+    url: https://github.com/ROSITO/CortexCraft/blob/main/CONTRIBUTING.md
+    about: How to set up the project and open pull requests.
