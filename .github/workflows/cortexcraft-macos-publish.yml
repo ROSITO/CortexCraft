@@ -1,0 +1,77 @@
+# Pattern aligned with storytold/artcraft artcraft-macos-publish.yml
+name: CortexCraft macOS release
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+
+concurrency:
+  group: macos-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-macos:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Universal macOS (arm64 + x86_64) — same idea as ArtCraft
+          - platform: macos-latest
+            args: --target universal-apple-darwin
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: tauri-macos-universal
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional Apple notarization (set org secrets when available):
+          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          projectPath: src-tauri
+          tagName: v__VERSION__
+          releaseName: CortexCraft v__VERSION__
+          releaseBody: |
+            Multi-platform Phase 1 build (ArtCraft / storytold-style release pipeline).
+
+            - **macOS**: universal DMG (Apple Silicon + Intel)
+            - **Windows**: NSIS / MSI from the Windows workflow
+            - **Linux**: AppImage + deb (x86_64 + aarch64) from the Linux workflow
+
+            macOS builds are unsigned until Apple Developer secrets are configured — use **Open Anyway** if Gatekeeper blocks first launch.
+
+            Docs: [USAGE](https://github.com/ROSITO/CortexCraft/blob/main/docs/USAGE.md) · [Recipes](https://github.com/ROSITO/CortexCraft/blob/main/docs/recipes/README.md)
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

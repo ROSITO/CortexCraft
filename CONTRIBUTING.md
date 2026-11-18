@@ -47,11 +47,21 @@ npx tsc --noEmit
 cargo test --manifest-path src-tauri/Cargo.toml --lib
 ```
 
-Release bundle (macOS):
+### Local release bundle
 
 ```bash
 npm run tauri build
 ```
+
+### Multi-OS GitHub releases (storytold / ArtCraft pattern)
+
+Workflows under `.github/workflows/cortexcraft-{macos,windows,linux}-publish.yml` mirror [storytold/artcraft](https://github.com/storytold/artcraft) publish jobs (Tauri matrix → draft GitHub Release).
+
+1. Merge the commit you want onto `release` (or trigger **workflow_dispatch** on each workflow).
+2. Wait for macOS / Windows / Linux jobs to attach assets to the draft `vX.Y.Z` release.
+3. Review the draft, then publish it.
+
+Optional org secrets for notarized macOS: `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` (same idea as ArtCraft).
 
 ### craft-libs note
 

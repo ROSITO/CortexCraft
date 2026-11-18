@@ -40,9 +40,17 @@ Local-first **second brain** for an [Obsidian](https://obsidian.md) vault: 3D gr
 
 ## Download
 
-**[Release v0.1.0](https://github.com/ROSITO/CortexCraft/releases/tag/v0.1.0)** — macOS Apple Silicon DMG (`CortexCraft_0.1.0_aarch64.dmg`).
+**[Releases](https://github.com/ROSITO/CortexCraft/releases)** — multi-OS builds in the ArtCraft / [storytold](https://github.com/storytold) style:
 
-Unsigned / not notarized yet: on first open use **Privacy & Security → Open Anyway** if Gatekeeper blocks it. Intel Mac builds are not included in this release.
+| Platform | Artifacts (CI) |
+| -------- | -------------- |
+| macOS | Universal DMG (`aarch64` + `x86_64`) |
+| Windows | NSIS / MSI |
+| Linux | `.deb` + AppImage (`x86_64` + `aarch64`) |
+
+Push (or merge) to the `release` branch, or run the `cortexcraft-*-publish` workflows via **Actions → Run workflow**. Draft releases are created/updated automatically.
+
+macOS is unsigned until Apple Developer secrets are configured — use **Privacy & Security → Open Anyway** if Gatekeeper blocks first launch.
 
 ## Quick start (from source)
 
