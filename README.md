@@ -38,7 +38,13 @@ Local-first **second brain** for an [Obsidian](https://obsidian.md) vault: 3D gr
 
 ![Graph Brain](docs/screenshots/01-graph-brain.png)
 
-## Quick start
+## Download
+
+**[Release v0.1.0](https://github.com/ROSITO/CortexCraft/releases/tag/v0.1.0)** — macOS Apple Silicon DMG (`CortexCraft_0.1.0_aarch64.dmg`).
+
+Unsigned / not notarized yet: on first open use **Privacy & Security → Open Anyway** if Gatekeeper blocks it. Intel Mac builds are not included in this release.
+
+## Quick start (from source)
 
 ### Prerequisites
 
