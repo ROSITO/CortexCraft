@@ -114,49 +114,59 @@ fn latest_journal(vault: &Path) -> Option<String> {
     Some(format!("{name}\n{preview}"))
 }
 
-fn resolve_pipeline(prefs: &Prefs) -> PathBuf {
+/// Explicit prefs path only — never invent `~/Documents/vault-pipeline` for status display.
+fn resolve_pipeline(prefs: &Prefs) -> Option<PathBuf> {
     let raw = prefs.keeper.pipeline_path.trim();
-    if !raw.is_empty() {
-        return expand_user(raw);
+    if raw.is_empty() {
+        return None;
     }
-    expand_user("~/Documents/vault-pipeline")
+    Some(expand_user(raw))
 }
 
 pub fn status_from_prefs() -> Result<KeeperStatus, String> {
     let prefs = prefs::open_store().get().clone();
     let pipeline = resolve_pipeline(&prefs);
-    let pipeline_ok = config_path(&pipeline).is_file();
+    let pipeline_ok = pipeline
+        .as_ref()
+        .map(|p| config_path(p).is_file())
+        .unwrap_or(false);
     let mut vault_in_config = String::new();
     let mut llm_enabled = prefs.keeper.llm_enabled;
     let mut model = prefs.keeper.model.clone();
     let mut max_turns = prefs.keeper.max_turns;
-    if pipeline_ok {
-        if let Ok(cfg) = read_config(&pipeline) {
-            if let Some(v) = cfg.get("vault").and_then(|x| x.as_str()) {
-                vault_in_config = v.to_string();
-            }
-            if let Some(llm) = cfg.get("llm") {
-                if let Some(b) = llm.get("enabled").and_then(|x| x.as_bool()) {
-                    llm_enabled = b;
+    if let Some(ref pipeline) = pipeline {
+        if pipeline_ok {
+            if let Ok(cfg) = read_config(pipeline) {
+                if let Some(v) = cfg.get("vault").and_then(|x| x.as_str()) {
+                    vault_in_config = v.to_string();
                 }
-                if let Some(m) = llm.get("model").and_then(|x| x.as_str()) {
-                    model = m.to_string();
-                }
-                if let Some(t) = llm.get("max_turns").and_then(|x| x.as_u64()) {
-                    max_turns = t as u32;
+                if let Some(llm) = cfg.get("llm") {
+                    if let Some(b) = llm.get("enabled").and_then(|x| x.as_bool()) {
+                        llm_enabled = b;
+                    }
+                    if let Some(m) = llm.get("model").and_then(|x| x.as_str()) {
+                        model = m.to_string();
+                    }
+                    if let Some(t) = llm.get("max_turns").and_then(|x| x.as_u64()) {
+                        max_turns = t as u32;
+                    }
                 }
             }
         }
     }
     let vault_path = if !prefs.vault.last_path.is_empty() {
         PathBuf::from(&prefs.vault.last_path)
-    } else {
+    } else if !vault_in_config.is_empty() {
         expand_user(&vault_in_config)
+    } else {
+        PathBuf::new()
     };
     let claude = which_claude();
     let token = token_present();
-    let hint = if !pipeline_ok {
-        "Choisissez le dossier vault-pipeline (contient keeper/config.json).".into()
+    let hint = if pipeline.is_none() {
+        "Choisissez le dossier vault-pipeline dans Réglages (contient keeper/config.json).".into()
+    } else if !pipeline_ok {
+        "Chemin vault-pipeline enregistré, mais keeper/config.json introuvable.".into()
     } else if !claude {
         "Binaire `claude` introuvable dans le PATH.".into()
     } else if !token {
@@ -169,7 +179,10 @@ pub fn status_from_prefs() -> Result<KeeperStatus, String> {
         "Keeper prêt (launchd / Run depuis l'app).".into()
     };
     Ok(KeeperStatus {
-        pipeline_path: pipeline.to_string_lossy().into_owned(),
+        pipeline_path: pipeline
+            .as_ref()
+            .map(|p| p.to_string_lossy().into_owned())
+            .unwrap_or_default(),
         pipeline_ok,
         vault_in_config,
         claude_on_path: claude,
@@ -177,7 +190,11 @@ pub fn status_from_prefs() -> Result<KeeperStatus, String> {
         llm_enabled,
         model,
         max_turns,
-        last_journal: latest_journal(&vault_path),
+        last_journal: if vault_path.as_os_str().is_empty() {
+            None
+        } else {
+            latest_journal(&vault_path)
+        },
         hint,
     })
 }
@@ -192,7 +209,10 @@ pub fn sync_config_from_prefs() -> Result<KeeperStatus, String> {
                 .into(),
         );
     }
-    let pipeline = resolve_pipeline(&prefs);
+    let pipeline = resolve_pipeline(&prefs).ok_or_else(|| {
+        "pipeline_path vide — enregistrez le chemin vault-pipeline avant de synchroniser."
+            .to_string()
+    })?;
     if !config_path(&pipeline).is_file() {
         return Err(format!(
             "keeper/config.json introuvable sous {}",
@@ -223,9 +243,20 @@ pub fn sync_config_from_prefs() -> Result<KeeperStatus, String> {
 /// Import llm.* + pipeline path from config.json into CortexCraft prefs (no write back).
 pub fn import_prefs_from_config() -> Result<KeeperStatus, String> {
     let mut store = prefs::open_store();
-    let pipeline = {
+    let Some(pipeline) = ({
         let prefs = store.get().clone();
         resolve_pipeline(&prefs)
+    }) else {
+        // No explicit path yet — optionally adopt suggest_pipeline if present, else leave empty.
+        if let Some(suggested) = suggest_pipeline_path() {
+            store.update(|p| {
+                if p.keeper.pipeline_path.trim().is_empty() {
+                    p.keeper.pipeline_path = suggested;
+                }
+            });
+            let _ = store.tick(std::time::Instant::now());
+        }
+        return status_from_prefs();
     };
     if !config_path(&pipeline).is_file() {
         return status_from_prefs();
@@ -257,7 +288,9 @@ pub fn run_keeper(mode: &str) -> Result<KeeperRunResult, String> {
         other => return Err(format!("mode invalide `{other}` (dry-run|run|status)")),
     };
     let prefs = prefs::open_store().get().clone();
-    let pipeline = resolve_pipeline(&prefs);
+    let pipeline = resolve_pipeline(&prefs).ok_or_else(|| {
+        "pipeline_path vide — choisissez vault-pipeline dans Réglages.".to_string()
+    })?;
     let script = pipeline.join("keeper").join("keeper.py");
     if !script.is_file() {
         return Err(format!("keeper.py introuvable: {}", script.display()));

@@ -1034,7 +1034,13 @@ export default function App() {
                 <li>
                   <div>
                     <strong>Pipeline</strong>
-                    <span>{keeperInfo?.pipelinePath || pipelinePath || "—"}</span>
+                    <span title={keeperInfo?.pipelinePath || pipelinePath || undefined}>
+                      {(keeperInfo?.pipelinePath || pipelinePath || "—")
+                        .split("/")
+                        .filter(Boolean)
+                        .slice(-2)
+                        .join("/") || "—"}
+                    </span>
                   </div>
                 </li>
                 <li>
@@ -1556,7 +1562,7 @@ export default function App() {
                 )}
                 {vaultPath && (
                   <p className="path" title={vaultPath}>
-                    {vaultPath}
+                    {vaultLabel || vaultPath}
                   </p>
                 )}
                 {status && <p className="status">{status}</p>}

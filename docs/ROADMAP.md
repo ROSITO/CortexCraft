@@ -73,6 +73,7 @@ Phase 2 MindCorpus (custody labos, royalties, Benchmark Zero) = **out of scope**
 
 ## Changelog
 
+- 2026-11-18 — Phase 1 marked complete: user guide + recipes + screenshots; keeper no longer invents a default pipeline path for status; vault path HUD shows basename.
 - 2026-11-18 — Open-source community pack (LICENSE MIT, CoC, CONTRIBUTING, SECURITY, issue/PR templates); local config + Claude headless bridge; dock icon full-bleed.
 - 2026-11-16 — Roadmap authored; Sprints 1–5 implemented in tree.
 - 2026-11-16 — Backlog batch: hub sparks, themes/palettes, ⌥⌘K capture, Settings page.

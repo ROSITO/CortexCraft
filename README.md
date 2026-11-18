@@ -30,6 +30,14 @@ Local-first **second brain** for an [Obsidian](https://obsidian.md) vault: 3D gr
 - Optional bridge to `vault-pipeline` keeper (Claude Code `claude -p`)
 - CLI MCP server (`cortexcraft mcp`)
 
+## User guide
+
+- **[docs/USAGE.md](docs/USAGE.md)** — à quoi ça sert, ce qui marche, comment s’en servir
+- **[docs/recipes/](docs/recipes/README.md)** — 10 recettes pas à pas
+- **[docs/screenshots/](docs/screenshots/README.md)** — captures UI (vault démo)
+
+![Graph Brain](docs/screenshots/01-graph-brain.png)
+
 ## Quick start
 
 ### Prerequisites
@@ -80,7 +88,9 @@ Cursor MCP example (put `cortexcraft` on your `PATH`):
 
 ## Status
 
-Phase 1 is usable as a local alpha. Open-source packaging and community docs live in this repo; some dependencies (private `craft-libs` pin) and optional keeper tooling may still limit a fully cold `git clone` for every contributor — tracked as issues.
+**Phase 1 complete** for local use: vault → graph → notes → search → imports → analyses → MCP → optional keeper. Verified with `npm run build`, `cargo test` (13 pass / 1 ignored live Notes), and UI smoke on a demo vault.
+
+Cold clone may still need access to the `craft-libs` git pin (see CONTRIBUTING). Keeper / Claude headless remain optional and external.
 
 ## License
 

@@ -21,7 +21,7 @@ Bring-in content lands at the **vault root**, one folder per source.
 If you still have content under `CORTEX/imports/` or `CORTEX/chats/`:
 
 ```bash
-./src-tauri/target/debug/cortexcraft migrate-layout --vault ~/Documents/obsidian_vault
+./src-tauri/target/debug/cortexcraft migrate-layout --vault /path/to/your/obsidian/vault
 ```
 
 Leaves `CORTEX/CURSOR`, `CORTEX/versions`, `CORTEX/daily` untouched.
